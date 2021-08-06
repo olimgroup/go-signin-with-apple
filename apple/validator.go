@@ -3,13 +3,12 @@ package apple
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/tideland/gorest/jwt"
+	"github.com/golang-jwt/jwt"
 )
 
 const (
@@ -22,6 +21,13 @@ const (
 	// AcceptHeader is the content that we are willing to accept
 	AcceptHeader string = "application/json"
 )
+
+type AppleJWT struct {
+	Email          string `json:"email"`
+	IsPrivateEmail string `json:"is_private_email"`
+	EmailVerified  string `json:"email_verified"`
+	jwt.StandardClaims
+}
 
 // ValidationClient is an interface to call the validation API
 type ValidationClient interface {
@@ -94,23 +100,32 @@ func (c *Client) VerifyRefreshToken(ctx context.Context, reqBody ValidationRefre
 
 // GetUniqueID decodes the id_token response and returns the unique subject ID to identify the user
 func GetUniqueID(idToken string) (string, error) {
-	j, err := jwt.Decode(idToken)
+	var (
+		appleJWT AppleJWT
+		parser   jwt.Parser
+	)
+
+	_, _, err := parser.ParseUnverified(idToken, &appleJWT)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
-	return fmt.Sprintf("%v", j.Claims()["sub"]), nil
+	return appleJWT.Subject, nil
 }
 
 // GetClaims decodes the id_token response and returns the JWT claims to identify the user
-func GetClaims(idToken string) (*jwt.Claims, error) {
-	j, err := jwt.Decode(idToken)
+func GetClaims(idToken string) (*AppleJWT, error) {
+	var (
+		appleJWT AppleJWT
+		parser   jwt.Parser
+	)
+
+	_, _, err := parser.ParseUnverified(idToken, &appleJWT)
 	if err != nil {
 		return nil, err
 	}
 
-	claim := j.Claims()
-	return &claim, nil
+	return &appleJWT, nil
 }
 
 func doRequest(ctx context.Context, client *http.Client, result interface{}, url string, data url.Values) error {

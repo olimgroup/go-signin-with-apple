@@ -90,7 +90,7 @@ func TestGetClaims(t *testing.T) {
 			}
 
 			if tt.wantEmail != "" {
-				assert.Equal(t, tt.wantEmail, (*got)["email"])
+				assert.Equal(t, tt.wantEmail, got.Email)
 			}
 		})
 	}
