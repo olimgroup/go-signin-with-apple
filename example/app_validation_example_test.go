@@ -71,9 +71,9 @@ YOUR_SECRET_PRIVATE_KEY
 		return
 	}
 
-	email := (*claim)["email"]
-	emailVerified := (*claim)["email_verified"]
-	isPrivateEmail := (*claim)["is_private_email"]
+	email := claim.Email
+	emailVerified := claim.EmailVerified
+	isPrivateEmail := claim.IsPrivateEmail
 
 	// Voila!
 	fmt.Println(unique)
